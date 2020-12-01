@@ -1,11 +1,3 @@
-'''
-Author: centrix
-Date: 2020-10-11 19:08:25
-LastEditTime: 2020-10-11 21:47:34
-LastEditors: Please set LastEditors
-Description: 端口扫描
-FilePath: \course_design_3\code\scanner\port_scanner.py
-'''
 from data import *
 from scapy.all import IP, TCP, ICMP, sr, sr1
 from numpy import array_split
@@ -25,7 +17,8 @@ param {type}
 return {type} 
     res{dict} 扫描结果 key为端口，value为端口状态
 '''
-def ports_scan(ip, scan_mod="all", timeout=5, start=1, end=65535, top=1000):
+def ports_scan(ip, scan_mod, timeout, start, end, top, threads_count):
+    print(ip, scan_mod, timeout, start, end, top, threads_count)
     if scan_mod == "all":  # 全端口扫描
         target = [x for x in range(start, end+1)]
     elif scan_mod == "valuable":  #部分端口扫描
@@ -33,7 +26,7 @@ def ports_scan(ip, scan_mod="all", timeout=5, start=1, end=65535, top=1000):
     else:
         print("scan_mod must be set as 'all' or 'valuable'")
         return
-    res = start_ports_scan(ip, target, timeout)
+    res = start_ports_scan(ip, target, timeout, threads_count)
     return res
 
 '''
@@ -46,10 +39,11 @@ param {type}
 return {type} 
     res{dict} 扫描结果 key为端口，value为端口状态
 '''
-def start_ports_scan(ip, target, timeout, threads_count=50):
+def start_ports_scan(ip, target, timeout, threads_count):
     dst_ip = IP(dst=ip)
     res = {k:"" for k in target}
     threads = []
+    print(target, threads_count)
     target_per_thread = array_split(target, threads_count)
     for target_ports in target_per_thread:
         threads.append(Thread(target=ports_scan_per_thread, args=(dst_ip, target_ports, res, timeout)))
@@ -92,5 +86,5 @@ def ports_scan_per_thread(dst_ip, target, res, timeout):
             res[port] = "Unknown"
 
 if __name__ == "__main__":
-    res = ports_scan('10.10.10.129')
+    #res = ports_scan('10.10.10.129')
     print(res)
